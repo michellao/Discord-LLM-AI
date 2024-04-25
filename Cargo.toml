@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"]}
 poise = "0.6"
+ollama-rs = "0.1.9"
 
 [dependencies.serenity]
 default-features = false
