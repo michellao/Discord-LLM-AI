@@ -1,0 +1,15 @@
+[package]
+name = "bot_ai"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"]}
+poise = "0.6"
+
+[dependencies.serenity]
+default-features = false
+features = ["cache", "collector", "client", "model", "builder", "chrono", "http", "default_native_tls"]
+version = "0.12"
