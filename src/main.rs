@@ -6,7 +6,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 
 /// Displays your or another user's account creation date
 #[poise::command(slash_command, prefix_command)]
-async fn age(
+async fn text(
     ctx: Context<'_>,
     #[description = "Selected user"] user: Option<serenity::User>,
 ) -> Result<(), Error> {
@@ -23,7 +23,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![age()],
+            commands: vec![text()],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
