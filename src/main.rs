@@ -19,7 +19,7 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 #[poise::command(slash_command)]
 async fn text(
     ctx: Context<'_>,
-    #[description = "Prompt"] prompt: Option<String>,
+    #[description = "Prompt"] prompt: String,
 ) -> Result<(), Error> {
     let reply = {
         poise::CreateReply::default()
@@ -30,7 +30,7 @@ async fn text(
         let ollama = ctx.data().ollama.lock().await;
         println!("{:?}", ollama);
         let generation_template = Arc::clone(&ctx.data().generation_template);
-        let generation_request = generation_template.template(prompt.unwrap());
+        let generation_request = generation_template.template(prompt);
         println!("{:?}", generation_request);
         let result = ollama.generate(generation_request).await;
         println!("{:?}", result);
