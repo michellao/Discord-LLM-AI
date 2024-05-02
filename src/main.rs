@@ -1,16 +1,13 @@
 mod ai;
 
-use std::sync::Arc;
-
-use ai::GenerationTemplate;
 use dotenv::dotenv;
-use ollama_rs::Ollama;
+use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
-use tokio::sync::Mutex;
+
+use crate::ai::TextGeneration;
 
 struct Data {
-    ollama: Mutex<Ollama>,
-    generation_template: Arc<GenerationTemplate>
+    generation_ai: GenerationAI,
 }
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -26,19 +23,10 @@ async fn text(
             .content("...")
     };
     let handle_response = ctx.send(reply).await?;
-    let response = {
-        let ollama = ctx.data().ollama.lock().await;
-        println!("{:?}", ollama);
-        let generation_template = Arc::clone(&ctx.data().generation_template);
-        let generation_request = generation_template.template(prompt);
-        println!("{:?}", generation_request);
-        let result = ollama.generate(generation_request).await;
-        println!("{:?}", result);
-        match result {
-            Ok(r) => r.response,
-            Err(_) => String::from("Error response"),
-        }
-    };
+
+    let generation_ai = &ctx.data().generation_ai;
+    let response = generation_ai.generate(prompt).await;
+    
     println!("response: {}", response);
     // Check when the response is more than 2000 characters
     handle_response.edit(
@@ -54,9 +42,8 @@ async fn main() {
     dotenv().ok();
     let host = std::env::var("OLLAMA_HOST").expect("missing OLLAMA_HOST");
     let _port = std::env::var("OLLAMA_PORT").expect("missing OLLAMA_PORT");
-
-    let ollama = Ollama::new(host, 11434);
-    let generation_template = GenerationTemplate::new(std::env::var("TEXT_MODEL").expect("missing TEXT_MODEL"));
+    let text_model = std::env::var("TEXT_MODEL").expect("missing TEXT_MODEL");
+    let generation_ai = GenerationAI::new(text_model, host, 11434);
 
     let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
@@ -70,8 +57,7 @@ async fn main() {
             Box::pin(async move {
                 poise::builtins::register_in_guild(ctx, &framework.options().commands, serenity::GuildId::new(936376273138245652)).await?;
                 Ok(Data {
-                    ollama: Mutex::new(ollama),
-                    generation_template: Arc::new(generation_template)
+                    generation_ai: generation_ai,
                 })
             })
         })
