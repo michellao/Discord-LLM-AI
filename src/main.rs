@@ -20,7 +20,7 @@ async fn text(
 ) -> Result<(), Error> {
     let reply = {
         poise::CreateReply::default()
-            .content("...")
+            .content("Generating...")
     };
     let handle_response = ctx.send(reply).await?;
 

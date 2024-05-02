@@ -22,7 +22,7 @@ impl GenerationAI {
         let generation_request = GenerationRequest::new(self.model_name.to_string(), prompt);
         let options = GenerationOptions::default()
             .temperature(0.6)
-            .num_predict(384)
+            .num_predict(390)
             .num_ctx(8192);
         generation_request
             .keep_alive(KeepAlive::Until { time: 300, unit: TimeUnit::Minutes })
