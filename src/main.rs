@@ -3,9 +3,9 @@ mod ai;
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
+use rusqlite::Connection;
 
 use crate::ai::TextGeneration;
-
 struct Data {
     generation_ai: GenerationAI,
 }
@@ -28,7 +28,7 @@ async fn text(
     let response = generation_ai.generate(prompt).await;
     
     println!("response: {}", response);
-    // Check when the response is more than 2000 characters
+
     handle_response.edit(
         ctx,
         poise::CreateReply::default()
@@ -37,13 +37,41 @@ async fn text(
     Ok(())
 }
 
+#[derive(Debug)]
+struct UserAi {
+    user_id: u64,
+    messages: Vec<String>
+}
+
+fn create_database() -> Connection {
+    let conn = Connection::open_in_memory().unwrap();
+    conn.execute(
+        "CREATE TABLE user_ai (
+            user_id INTEGER PRIMARY KEY,
+            messages    TEXT NOT NULL
+        )",
+        ()
+    ).unwrap();
+    conn
+}
+
+fn setup_ai() -> GenerationAI {
+    let host = std::env::var("OLLAMA_HOST").expect("missing OLLAMA_HOST");
+    let port_string = std::env::var("OLLAMA_PORT").expect("missing OLLAMA_PORT");
+    let text_model = std::env::var("TEXT_MODEL").expect("missing TEXT_MODEL");
+    let port = match port_string.as_str().parse::<u16>() {
+        Ok(r) => r,
+        Err(_) => panic!("Invalid port")
+    };
+    GenerationAI::new(text_model, host, port)
+}
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let host = std::env::var("OLLAMA_HOST").expect("missing OLLAMA_HOST");
-    let _port = std::env::var("OLLAMA_PORT").expect("missing OLLAMA_PORT");
-    let text_model = std::env::var("TEXT_MODEL").expect("missing TEXT_MODEL");
-    let generation_ai = GenerationAI::new(text_model, host, 11434);
+    let conn = create_database();
+    
+    let generation_ai = setup_ai();
 
     let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
