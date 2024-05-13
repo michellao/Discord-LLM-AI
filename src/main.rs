@@ -1,9 +1,10 @@
 mod ai;
+mod db;
 
+use db::Database;
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
-use rusqlite::Connection;
 
 use crate::ai::TextGeneration;
 struct Data {
@@ -43,18 +44,6 @@ struct UserAi {
     messages: Vec<String>
 }
 
-fn create_database() -> Connection {
-    let conn = Connection::open_in_memory().unwrap();
-    conn.execute(
-        "CREATE TABLE user_ai (
-            user_id INTEGER PRIMARY KEY,
-            messages    TEXT NOT NULL
-        )",
-        ()
-    ).unwrap();
-    conn
-}
-
 fn setup_ai() -> GenerationAI {
     let host = std::env::var("OLLAMA_HOST").expect("missing OLLAMA_HOST");
     let port_string = std::env::var("OLLAMA_PORT").expect("missing OLLAMA_PORT");
@@ -69,7 +58,7 @@ fn setup_ai() -> GenerationAI {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let conn = create_database();
+    let database = Database::new();
     
     let generation_ai = setup_ai();
 
