@@ -39,9 +39,16 @@ async fn text(
 }
 
 #[derive(Debug)]
-struct UserAi {
-    user_id: u64,
-    messages: Vec<String>
+struct User {
+    id_user: u64,
+    is_bot: bool,
+    discord_id: u64
+}
+#[derive(Debug)]
+struct Message {
+    id_message: u64,
+    user: User,
+    content: String
 }
 
 fn setup_ai() -> GenerationAI {
