@@ -1,3 +1,11 @@
+[workspace]
+members = [
+    "setup"
+]
+
+[workspace.dependencies]
+rusqlite = { version = "0.31.0", features = ["bundled"] }
+
 [package]
 name = "bot_ai"
 version = "0.1.0"
@@ -10,7 +18,7 @@ tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"]}
 poise = "0.6"
 ollama-rs = "0.1.9"
 dotenv = "0.15.0"
-rusqlite = { version = "0.31.0", features = ["bundled"]}
+rusqlite = { workspace = true }
 
 [dependencies.serenity]
 default-features = false
