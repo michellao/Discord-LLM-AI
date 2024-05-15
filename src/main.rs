@@ -1,7 +1,6 @@
 mod ai;
-mod db;
 
-use db::Database;
+use database::Database;
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;

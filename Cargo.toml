@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "database",
     "setup"
 ]
 
@@ -19,6 +20,7 @@ poise = "0.6"
 ollama-rs = "0.1.9"
 dotenv = "0.15.0"
 rusqlite = { workspace = true }
+database = { path = "./database" }
 
 [dependencies.serenity]
 default-features = false

@@ -1,3 +1,4 @@
+use database::Database;
 fn main() {
-    println!("Hello, world!");
+    let database = Database::new();
 }

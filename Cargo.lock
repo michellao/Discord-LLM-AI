@@ -131,6 +131,7 @@ dependencies = [
 name = "bot_ai"
 version = "0.1.0"
 dependencies = [
+ "database",
  "dotenv",
  "ollama-rs",
  "poise",
@@ -343,6 +344,13 @@ name = "data-encoding"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e962a19be5cfc3f3bf6dd8f61eb50107f356ad6270fbb3ed41476571db78be5"
+
+[[package]]
+name = "database"
+version = "0.1.0"
+dependencies = [
+ "rusqlite",
+]
 
 [[package]]
 name = "deranged"
@@ -1676,6 +1684,7 @@ dependencies = [
 name = "setup"
 version = "0.1.0"
 dependencies = [
+ "database",
  "rusqlite",
 ]
 
