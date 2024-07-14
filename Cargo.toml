@@ -21,6 +21,7 @@ ollama-rs = "0.1.9"
 dotenv = "0.15.0"
 rusqlite = { workspace = true }
 database = { path = "./database" }
+sentry = "0.34.0"
 
 [dependencies.serenity]
 default-features = false
