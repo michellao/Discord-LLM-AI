@@ -37,19 +37,6 @@ async fn text(
     Ok(())
 }
 
-#[derive(Debug)]
-struct User {
-    id_user: u64,
-    is_bot: bool,
-    discord_id: u64
-}
-#[derive(Debug)]
-struct Message {
-    id_message: u64,
-    user: User,
-    content: String
-}
-
 fn setup_ai() -> GenerationAI {
     let host = std::env::var("OLLAMA_HOST").expect("missing OLLAMA_HOST");
     let port_string = std::env::var("OLLAMA_PORT").expect("missing OLLAMA_PORT");
@@ -63,6 +50,10 @@ fn setup_ai() -> GenerationAI {
 
 #[tokio::main]
 async fn main() {
+    let _guard = sentry::init(("https://bf6bfdebe100d884bbbcc932d54c73ba@o4507341534068736.ingest.de.sentry.io/4507392043712592", sentry::ClientOptions {
+        release: sentry::release_name!(),
+        ..Default::default()
+    }));
     dotenv().ok();
     let database = Database::new();
     
