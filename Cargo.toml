@@ -5,7 +5,7 @@ members = [
 ]
 
 [workspace.dependencies]
-rusqlite = { version = "0.31.0", features = ["bundled"] }
+rusqlite = { version = "0.32.0", features = ["bundled"] }
 
 [package]
 name = "bot_ai"
