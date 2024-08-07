@@ -1,11 +1,14 @@
 [workspace]
 members = [
     "database",
-    "setup"
+    "inference_ai"
 ]
 
 [workspace.dependencies]
-rusqlite = { version = "0.32.0", features = ["bundled"] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [package]
 name = "bot_ai"
@@ -15,11 +18,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"]}
+tokio = { workspace = true }
 poise = "0.6"
-ollama-rs = "0.1.9"
 dotenv = "0.15.0"
 rusqlite = { workspace = true }
+inference_ai = { path = "./inference_ai" }
 database = { path = "./database" }
 sentry = "0.34.0"
 
