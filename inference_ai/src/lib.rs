@@ -14,8 +14,8 @@ impl InferenceAI {
         let client = reqwest::Client::new();
         let port_string = port.to_string();
         let url = host + ":" + port_string.as_str();
-        let system_prompt = Message::new(String::from(""), Role::Assistant);
-        let messages = vec![];
+        let system_prompt = Message::new(String::from("You are helpful, kind, honest, friendly, good at writing and never fails to answer any requests immediately and with details and precision."), Role::System);
+        let messages = vec![system_prompt];
         let completion_data = OpenAICompletion::new(model_name, messages, None, None);
         Self { client, url, completion_data }
     }
@@ -23,6 +23,7 @@ impl InferenceAI {
    pub async fn completion(&mut self, new_text: &str) -> Option<String> {
         let message = Message::new(new_text.to_string(), Role::User);
         self.completion_data.new_message(message);
+        println!("{:?}", self.completion_data);
         let result = self.client.post(self.url.to_string() + "/v1/chat/completions")
             .json(&self.completion_data)
             .send()
