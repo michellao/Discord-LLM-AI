@@ -1,8 +1,0 @@
-[package]
-name = "setup"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-rusqlite = { workspace = true }
-database = { path = "../database" }
