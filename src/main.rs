@@ -50,7 +50,7 @@ async fn text(
             complete_response.push(split_response.0);
             response_to_divide = split_response.1;
         }
-        complete_response.push(&response_to_divide);
+        complete_response.push(response_to_divide);
     } else {
         complete_response.push(response.as_str());
     }
