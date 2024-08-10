@@ -34,7 +34,6 @@ pub async fn text(
     println!("Separate response: {:?}", complete_response);
 
     for answer in 0..complete_response.len() {
-        println!("Answer {}", answer);
         if answer == 0 {
             handle_generating_message.edit(
                 ctx,
@@ -50,5 +49,15 @@ pub async fn text(
         }
     }
 
+    Ok(())
+}
+
+#[poise::command(slash_command)]
+pub async fn clear_conversation(
+    ctx: Context<'_>,
+) -> Result<(), Error> {
+    let generation_ai = &ctx.data().generation_ai;
+    generation_ai.clear_conversation().await;
+    ctx.say("Clear all previous messages").await?;
     Ok(())
 }

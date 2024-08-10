@@ -42,7 +42,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::text()],
+            commands: vec![commands::text(), commands::clear_conversation()],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
