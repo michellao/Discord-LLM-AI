@@ -1,4 +1,0 @@
-enum Tables {
-    user,
-    message
-}

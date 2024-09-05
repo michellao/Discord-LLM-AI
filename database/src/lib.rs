@@ -1,121 +1,70 @@
-use std::{fmt::format, vec};
-
-use rusqlite::Connection;
+pub mod model;
+mod format_sql;
+use format_sql::FormatSql;
+use model::{Model, DataType};
+use sqlx::SqliteConnection;
+use serde::Serialize;
 
 pub struct Database {
-    conn: Connection,
+    conn: SqliteConnection,
 }
 
 impl Database {
-    pub fn new(conn: Connection) -> Self {
-        conn.execute(
-            "CREATE TABLE user (
+    pub async fn new(mut conn: SqliteConnection) -> Self {
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS user (
                 id_user INTEGER PRIMARY KEY,
                 is_bot INTEGER NOT NULL DEFAULT FALSE,
                 discord_id INTEGER DEFAULT NULL
-            );",
-            ()
-        ).unwrap();
-        conn.execute(
-            "CREATE TABLE message (
+            );"
+        ).execute(&mut conn).await.unwrap();
+        sqlx::query(
+            "CREATE TABLE IF NOT EXISTS message (
                 id_message INTEGER PRIMARY KEY,
                 user_id INTEGER,
                 content TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES user(id_user)
-            )",
-            ()
-        ).unwrap();
+            )"
+        ).execute(&mut conn).await.unwrap();
         Self {
             conn
         }
     }
 
-    fn transform_rows_to_string(table_names: &Vec<&str>) -> String {
-        let mut rows_string = String::from("");
-        for i in 0..table_names.capacity() {
-            let string: String;
-            if table_names.capacity() - 1 > i {
-                string = format!("{}, ", table_names[i]);
-            } else {
-                string = format!("{}", table_names[i]);
-            }
-            rows_string.push_str(&string);
-        }
-        rows_string
+    pub fn select_from_id<T: Serialize + Model>(&mut self, table_name: DataType, id: u64) {
+        let rows_string = String::from("*");
+        let sql = format!("SELECT {} FROM {};", rows_string, table_name.to_string());
+
     }
 
-    pub fn select(&self, object: &impl Data) {
-        let row_names = object.to_obj();
-        let rows_string = Self::transform_rows_to_string(&row_names);
-        let sql = format!("SELECT {} FROM {};", rows_string, object.to_table_name());
-        println!("{sql}");
-        let result = self.conn.execute(
-            &sql,
-            ()
-        );
-        println!("{:?}", result);
-    }
-
-    pub fn insert(&self, object: &impl Data) {
-        let row_names = object.to_obj();
-        let sql = format!("INSERT INTO {} VALUES ()", object.to_table_name());
-        let result = self.conn.execute(
-            &sql,
-        ()
-        );
-    }
-
-    pub fn delete(&self, object: &impl Data, primary_id: &i64) -> bool {
-        let first_row = object.to_obj()[0];
-        let sql = format!("DELETE FROM {} WHERE {} = {}", object.to_table_name(), first_row, primary_id);
-        let result = self.conn.execute(
-            &sql,
-            ()
-        );
+    pub async fn insert<T: Serialize + Model>(&mut self, object: &T) -> bool {
+        let format_sql = FormatSql::new(object);
+        let row_names = format_sql.format_rows_select();
+        let insert_values = format_sql.format_sql_set_placeholder();
+        let sql = format!("INSERT INTO {} ({}) VALUES ({})", object.to_table_name(), row_names, insert_values);
+        println!("{}", sql);
+        let result = format_sql.execute_sql(&mut self.conn, &sql).await;
         match result {
             Err(_) => false,
-            Ok(value) => value > 0
+            Ok(r) => r.rows_affected() > 0
         }
     }
-}
 
-#[derive(Debug)]
-pub struct User {
-    pub id_user: u64,
-    pub is_bot: bool,
-    pub discord_id: u64
-}
-
-#[derive(Debug)]
-pub struct Message {
-    pub id_message: u64,
-    pub user: User,
-    pub content: String
-}
-
-pub trait Data {
-    fn to_table_name<'a>(&self) -> &'a str;
-    fn to_obj(&self) -> Vec<&str>;
-}
-
-impl Data for User {
-
-    fn to_table_name<'a>(&self) -> &'a str {
-        "user"
+    pub async fn update<T: Serialize + Model>(&mut self, object: &T) -> bool {
+        let format_sql = FormatSql::new(object);
+        let format_sql_key = format_sql.format_sql_key_value();
+        let sql = format!("UPDATE {} SET {} WHERE {} = {}", object.to_table_name(), format_sql_key, object.get_primary_key_name(), object.get_id());
+        println!("{}", sql);
+        let result = format_sql.execute_sql(&mut self.conn, &sql).await;
+        match result {
+            Err(_) => false,
+            Ok(r) => r.rows_affected() > 0
+        }
     }
-    
-    fn to_obj(&self) -> Vec<&str> {
-        vec!["id_user", "is_bot" , "discord_id"]
-    }
-}
 
-impl Data for Message {
-
-    fn to_table_name<'a>(&self) -> &'a str {
-        "message"
-    }
-    
-    fn to_obj(&self) -> Vec<&str> {
-        vec!["id_message", "user", "content"]
+    pub fn delete_object<T: Serialize + Model>(&mut self, object: &T) -> bool {
+        let sql = format!("DELETE FROM {} WHERE {} = {}", object.to_table_name(), object.get_primary_key_name(), object.get_id());
+        println!("{}", sql);
+        false
     }
 }
