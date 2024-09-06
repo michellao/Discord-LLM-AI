@@ -62,9 +62,14 @@ impl Database {
         }
     }
 
-    pub fn delete_object<T: Serialize + Model>(&mut self, object: &T) -> bool {
+    pub async fn delete_object<T: Serialize + Model>(&mut self, object: &T) -> bool {
+        let format_sql = FormatSql::new(object);
         let sql = format!("DELETE FROM {} WHERE {} = {}", object.to_table_name(), object.get_primary_key_name(), object.get_id());
         println!("{}", sql);
-        false
+        let result = format_sql.execute_sql(&mut self.conn, &sql).await;
+        match result {
+            Err(_) => false,
+            Ok(r) => r.rows_affected() > 0
+        }
     }
 }
