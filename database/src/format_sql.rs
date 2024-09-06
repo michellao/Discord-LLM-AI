@@ -1,6 +1,6 @@
 use serde::Serialize;
 use serde_json::{Map, Value};
-use sqlx::{sqlite::SqliteQueryResult, Error, Row, Sqlite, SqliteConnection};
+use sqlx::{sqlite::SqliteQueryResult, Error, Pool, Row, Sqlite, SqliteConnection};
 use crate::model::{Model, User, DataType, Message};
 
 pub struct FormatSql {
@@ -126,7 +126,7 @@ impl FormatSql {
         sql_format
     }
 
-    pub async fn query_sql(&self, conn: &mut SqliteConnection, sql: &str) {
+    pub async fn query_sql(&self, conn: &Pool<Sqlite>, sql: &str) {
         let mut handle: sqlx::query::Query<'_, Sqlite, _> = sqlx::query(sql);
         for v in self.object.values() {
             handle = handle.bind(v);
@@ -142,7 +142,7 @@ impl FormatSql {
         }
     }
 
-    pub async fn execute_sql(&self, conn: &mut SqliteConnection, sql: &str) -> Result<SqliteQueryResult, Error> {
+    pub async fn execute_sql(&self, conn: &Pool<Sqlite>, sql: &str) -> Result<SqliteQueryResult, Error> {
         let mut handle: sqlx::query::Query<'_, Sqlite, _> = sqlx::query(sql);
         for v in self.object.values() {
             handle = handle.bind(v);

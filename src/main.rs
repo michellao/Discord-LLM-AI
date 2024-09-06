@@ -5,7 +5,7 @@ use database::Database;
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
-use rusqlite::Connection;
+use sqlx::{sqlite::SqlitePoolOptions, Connection, SqliteConnection};
 
 pub struct DataDiscord {
     generation_ai: GenerationAI,
@@ -26,15 +26,18 @@ fn setup_ai() -> GenerationAI {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Error> {
     let _guard = sentry::init(("https://bf6bfdebe100d884bbbcc932d54c73ba@o4507341534068736.ingest.de.sentry.io/4507392043712592", sentry::ClientOptions {
         release: sentry::release_name!(),
         ..Default::default()
     }));
     dotenv().ok();
-    // let connection = Connection::open_in_memory().unwrap();
-    // let database = Database::new(connection);
 
+    let pool = SqlitePoolOptions::new()
+        .connect("sqlite::memory:")
+        .await?;
+    let database = Database::new(pool).await;
+    
     let generation_ai = setup_ai();
 
     let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
@@ -59,4 +62,5 @@ async fn main() {
         .framework(framework)
         .await;
     client.unwrap().start().await.unwrap();
+    Ok(())
 }
