@@ -42,7 +42,6 @@ impl Database {
         let row_names = format_sql.format_rows_select();
         let insert_values = format_sql.format_sql_set_placeholder();
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", object.to_table_name(), row_names, insert_values);
-        println!("{}", sql);
         let result = format_sql.execute_sql(&mut self.conn, &sql).await;
         match result {
             Err(_) => false,
@@ -54,7 +53,6 @@ impl Database {
         let format_sql = FormatSql::new(object);
         let format_sql_key = format_sql.format_sql_key_value();
         let sql = format!("UPDATE {} SET {} WHERE {} = {}", object.to_table_name(), format_sql_key, object.get_primary_key_name(), object.get_id());
-        println!("{}", sql);
         let result = format_sql.execute_sql(&mut self.conn, &sql).await;
         match result {
             Err(_) => false,
@@ -65,7 +63,6 @@ impl Database {
     pub async fn delete_object<T: Serialize + Model>(&mut self, object: &T) -> bool {
         let format_sql = FormatSql::new(object);
         let sql = format!("DELETE FROM {} WHERE {} = {}", object.to_table_name(), object.get_primary_key_name(), object.get_id());
-        println!("{}", sql);
         let result = format_sql.execute_sql(&mut self.conn, &sql).await;
         match result {
             Err(_) => false,
