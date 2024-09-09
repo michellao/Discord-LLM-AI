@@ -20,25 +20,21 @@ impl ToString for DataType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct User {
-    pub id_user: u64,
-    pub is_bot: bool,
-    pub discord_id: u64
+    pub id_user: Option<u64>,
+    pub is_bot: Option<bool>,
+    pub discord_id: Option<u64>
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct Message {
-    pub id_message: u64,
-    pub user: User,
-    pub content: String
+    pub id_message: Option<u64>,
+    pub user_id: Option<User>,
+    pub content: Option<String>
 }
 
 impl Model for Message {
-    fn get_type(&self) -> DataType {
-        DataType::Message
-    }
-
     fn to_table_name(&self) -> String {
         String::from("message")
     }
@@ -48,15 +44,13 @@ impl Model for Message {
     }
 
     fn get_id(&self) -> u64 {
-        self.id_message
+        self.id_message.unwrap_or_else(|| {
+            0
+        })
     }
 }
 
 impl Model for User {
-    fn get_type(&self) -> DataType {
-        DataType::User
-    }
-
     fn to_table_name(&self) -> String {
         String::from("user")
     }
@@ -66,12 +60,13 @@ impl Model for User {
     }
 
     fn get_id(&self) -> u64 {
-        self.id_user
+        self.id_user.unwrap_or_else(|| {
+            0
+        })
     }
 }
 
 pub trait Model {
-    fn get_type(&self) -> DataType;
     fn to_table_name(&self) -> String;
     fn get_primary_key_name(&self) -> String;
     fn get_id(&self) -> u64;
