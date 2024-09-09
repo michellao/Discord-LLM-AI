@@ -1,18 +1,18 @@
 use serde::Serialize;
-use serde_json::{Map, Value};
-use sqlx::{sqlite::SqliteQueryResult, Error, Pool, Row, Sqlite, SqliteConnection};
-use crate::model::{Model, User, DataType, Message};
+use serde_json::{Map, Number, Value};
+use sqlx::{sqlite::SqliteQueryResult, Error, Pool, Sqlite};
+use crate::model::{DataType, Message, Model, User};
 
-pub struct FormatSql {
-    type_object: DataType,
+pub struct FormatSql<'a, T> {
+    model: &'a T,
     object: Map<String, Value>,
 }
 
-impl FormatSql {
-    pub fn new<T: Serialize + Model>(object: &T) -> Self {
+impl<'a, T: Serialize + Model> FormatSql<'a, T> {
+    pub fn new(object: &'a T) -> Self {
         let serialize = serde_json::to_value(object).unwrap();
         let serialize_object = serialize.as_object().unwrap();
-        Self { type_object: object.get_type(), object: serialize_object.to_owned() }
+        Self { model: object, object: serialize_object.to_owned() }
     }
 
     /// For example
@@ -35,7 +35,7 @@ impl FormatSql {
         format
     }
 
-    pub fn object_to_model(value: Value) -> Option<Box<dyn Model>> {
+    pub fn object_to_model(value: &Value) -> Option<Box<dyn Model>> {
         let list_models = DataType::all();
         for type_value in list_models {
             let clone_value = value.clone();
@@ -59,43 +59,14 @@ impl FormatSql {
         None
     }
 
-    fn format_type_sql(value: &Value) -> String {
-        let mut format_sql = String::from("");
-        if value.is_string() {
-            format_sql = String::from(format!("\"{}\"", value));
-        } else if value.is_number() {
-            format_sql = String::from(format!("{}", value));
-        } else if value.is_boolean() {
-            format_sql = String::from(format!("{}", value));
-        } else if value.is_object() {
-            let model = Self::object_to_model(value.to_owned());
-            let primary_key_value = match model {
-                None => 0,
-                Some(r) => r.get_id()
-            };
-            format_sql = String::from(format!("{}", primary_key_value));
+    fn convert_object_if_necessary_to_id(value: &Value) -> Value {
+        if value.is_object() {
+            let model = Self::object_to_model(value).expect("Error because it doesn't implement a struct");
+            let res = Value::Number(Number::from(model.get_id()));
+            return res;
         }
-        format_sql
+        value.to_owned()
     }
-
-    /* pub fn format_values_as_params(self) -> Vec<>> {
-        let mut params: Vec<String> = Vec::new();
-        for value in self.object.values() {
-            match value {
-                Value::Bool(b) => params.push(Box::new(b)),
-                Value::Number(n) => {
-                    if let Some(i) = n.as_i64() {
-                        params.push(Box::new(i));
-                    } else if let Some(f) = n.as_f64() {
-                        params.push(Box::new(f));
-                    }
-                },
-                Value::String(s) => params.push(Box::new(s)),
-                _ => (),
-            }
-        }
-        params
-    } */
 
     /// For example
     /// ```rust
@@ -126,18 +97,14 @@ impl FormatSql {
         sql_format
     }
 
-    pub async fn query_sql(&self, conn: &Pool<Sqlite>, sql: &str) {
-        let mut handle: sqlx::query::Query<'_, Sqlite, _> = sqlx::query(sql);
-        for v in self.object.values() {
-            handle = handle.bind(v);
-        }
-        let result = handle.fetch_all(conn).await;
+    pub async fn query_sql(&self, conn: &Pool<Sqlite>, select_sql: &str) {
+        let mut handle: sqlx::query::Query<'_, Sqlite, _> = sqlx::query(select_sql);
+        
+        let result = handle.fetch_one(conn).await;
         match result {
-            Err(e) => println!("{}", e),
+            Err(e) => println!("Query data error: {}", e),
             Ok(r) => {
-                for row in r {
-                    println!("{}", row.len());
-                }
+                
             }
         }
     }
@@ -145,7 +112,8 @@ impl FormatSql {
     pub async fn execute_sql(&self, conn: &Pool<Sqlite>, sql: &str) -> Result<SqliteQueryResult, Error> {
         let mut handle: sqlx::query::Query<'_, Sqlite, _> = sqlx::query(sql);
         for v in self.object.values() {
-            handle = handle.bind(v);
+            let convert = Self::convert_object_if_necessary_to_id(v);
+            handle = handle.bind(convert);
         }
         let result = handle.execute(conn).await;
         result
