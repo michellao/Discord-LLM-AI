@@ -35,8 +35,8 @@ pub struct Message {
 }
 
 impl Model for Message {
-    fn to_table_name(&self) -> String {
-        String::from("message")
+    fn to_data_type(&self) -> DataType {
+        DataType::Message
     }
 
     fn get_primary_key_name(&self) -> String {
@@ -51,8 +51,8 @@ impl Model for Message {
 }
 
 impl Model for User {
-    fn to_table_name(&self) -> String {
-        String::from("user")
+    fn to_data_type(&self) -> DataType {
+        DataType::User
     }
 
     fn get_primary_key_name(&self) -> String {
@@ -67,7 +67,19 @@ impl Model for User {
 }
 
 pub trait Model {
-    fn to_table_name(&self) -> String;
+    fn to_data_type(&self) -> DataType;
     fn get_primary_key_name(&self) -> String;
     fn get_id(&self) -> u64;
+}
+
+impl Default for Message {
+    fn default() -> Self {
+        Self { id_message: Default::default(), user_id: Default::default(), content: Default::default() }
+    }
+}
+
+impl Default for User {
+    fn default() -> Self {
+        Self { id_user: Default::default(), is_bot: Default::default(), discord_id: Default::default() }
+    }
 }
