@@ -2,30 +2,34 @@ pub mod model;
 mod format_sql;
 use format_sql::FormatSql;
 use model::Model;
-use sqlx::{Pool, Sqlite};
+use sqlx::{Pool, Postgres};
 use serde::Serialize;
 
-pub struct Database {
-    conn: Pool<Sqlite>,
+pub struct Database<'a> {
+    conn: &'a Pool<Postgres>,
 }
 
-impl Database {
-    pub async fn new(conn: Pool<Sqlite>) -> Self {
-        sqlx::query(
-            "CREATE TABLE IF NOT EXISTS user (
-                id_user INTEGER PRIMARY KEY,
-                is_bot INTEGER NOT NULL DEFAULT FALSE,
-                discord_id INTEGER DEFAULT NULL
+impl<'a> Database<'a> {
+    pub async fn new(conn: &'a Pool<Postgres>) -> Self {
+        sqlx::raw_sql(
+            "DROP TABLE IF EXISTS message;
+            DROP TABLE IF EXISTS user_llm;",
+        ).execute(conn).await.unwrap();
+        sqlx::raw_sql(
+            "CREATE TABLE IF NOT EXISTS user_llm (
+                id_user SERIAL PRIMARY KEY,
+                is_bot BOOLEAN NOT NULL DEFAULT FALSE,
+                discord_id INTEGER NOT NULL
             );"
-        ).execute(&conn).await.unwrap();
-        sqlx::query(
+        ).execute(conn).await.unwrap();
+        sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS message (
-                id_message INTEGER PRIMARY KEY,
+                id_message SERIAL PRIMARY KEY,
                 user_id INTEGER,
                 content TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES user(id_user)
+                FOREIGN KEY (user_id) REFERENCES user_llm (id_user)
             )"
-        ).execute(&conn).await.unwrap();
+        ).execute(conn).await.unwrap();
         Self {
             conn
         }
@@ -40,12 +44,15 @@ impl Database {
 
     pub async fn insert<T: Serialize + Model>(&mut self, object: &T) -> bool {
         let format_sql = FormatSql::new(object);
-        let row_names = format_sql.format_rows_select();
+        let row_names = format_sql.format_rows_insert();
         let insert_values = format_sql.format_sql_set_placeholder();
         let sql = format!("INSERT INTO {} ({}) VALUES ({})", object.to_data_type().to_string(), row_names, insert_values);
         let result = format_sql.execute_sql(&self.conn, &sql).await;
         match result {
-            Err(_) => false,
+            Err(e) => {
+                println!("{}", e);
+                return false;
+            },
             Ok(r) => r.rows_affected() > 0
         }
     }
