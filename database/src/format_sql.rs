@@ -92,10 +92,15 @@ impl<'a, T: Serialize + Model> FormatSql<'a, T> {
     /// `id_user = $1, discord_id = $2, is_bot = $3`
     pub fn format_sql_key_value(&self) -> String {
         let mut sql_format = String::from("");
-        for (i, k) in self.object.keys().enumerate() {
-            sql_format.push_str(format!("{} = ${}", k, i + 1).as_str());
-            if self.object.len() - 1 > i {
-                sql_format.push_str(", ");
+        let mut diff = 0;
+        for (i, (k, v)) in self.object.iter().enumerate() {
+            if !v.is_null() {
+                if i < self.object.len() && i > 0 {
+                    sql_format.push_str(", ");
+                }
+                sql_format.push_str(format!("{} = ${}", k, i + 1 - diff).as_str());
+            } else {
+                diff += 1;
             }
         }
         sql_format
