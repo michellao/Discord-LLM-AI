@@ -15,21 +15,21 @@ impl ToString for DataType {
     fn to_string(&self) -> String {
         match self {
             DataType::Message => String::from("message"),
-            DataType::User => String::from("user")
+            DataType::User => String::from("user_llm")
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct User {
-    pub id_user: Option<u64>,
+    pub id_user: Option<i64>,
     pub is_bot: Option<bool>,
-    pub discord_id: Option<u64>
+    pub discord_id: Option<i64>
 }
 
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct Message {
-    pub id_message: Option<u64>,
+    pub id_message: Option<i64>,
     pub user_id: Option<User>,
     pub content: Option<String>
 }
@@ -43,7 +43,7 @@ impl Model for Message {
         String::from("id_message")
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> i64 {
         self.id_message.unwrap_or_else(|| {
             0
         })
@@ -59,7 +59,7 @@ impl Model for User {
         String::from("id_user")
     }
 
-    fn get_id(&self) -> u64 {
+    fn get_id(&self) -> i64 {
         self.id_user.unwrap_or_else(|| {
             0
         })
@@ -69,7 +69,7 @@ impl Model for User {
 pub trait Model {
     fn to_data_type(&self) -> DataType;
     fn get_primary_key_name(&self) -> String;
-    fn get_id(&self) -> u64;
+    fn get_id(&self) -> i64;
 }
 
 impl Default for Message {
