@@ -24,14 +24,14 @@ impl ToString for DataType {
 pub struct User {
     pub id_user: Option<i64>,
     pub is_bot: Option<bool>,
-    pub discord_id: Option<i64>
+    pub discord_id: i64
 }
 
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct Message {
     pub id_message: Option<i64>,
-    pub user_id: Option<User>,
-    pub content: Option<String>
+    pub user_id: User,
+    pub content: String
 }
 
 impl Model for Message {
