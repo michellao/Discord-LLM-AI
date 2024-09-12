@@ -5,7 +5,7 @@ use database::Database;
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
-use sqlx::{sqlite::SqlitePoolOptions, Connection, SqliteConnection};
+use sqlx::postgres::PgPoolOptions;
 
 pub struct DataDiscord {
     generation_ai: GenerationAI,
@@ -33,10 +33,12 @@ async fn main() -> Result<(), Error> {
     }));
     dotenv().ok();
 
-    let pool = SqlitePoolOptions::new()
-        .connect("sqlite::memory:")
+    let database_uri = std::env::var("POSTGRES_URI").expect("missing POSTGRES_URI");
+
+    let pool = PgPoolOptions::new()
+        .connect(&database_uri)
         .await?;
-    let database = Database::new(pool).await;
+    let database = Database::new(&pool).await;
     
     let generation_ai = setup_ai();
 
