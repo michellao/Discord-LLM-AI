@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgRow, FromRow, Row};
 
 pub enum DataType {
     User,
@@ -27,7 +28,7 @@ pub struct User {
     pub discord_id: i64
 }
 
-#[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Message {
     pub id_message: Option<i64>,
     pub user_id: User,
@@ -81,5 +82,15 @@ impl Default for Message {
 impl Default for User {
     fn default() -> Self {
         Self { id_user: Default::default(), is_bot: Default::default(), discord_id: Default::default() }
+    }
+}
+
+impl FromRow<'_, PgRow> for Message {
+    fn from_row(row: &PgRow) -> sqlx::Result<Self> {
+        Ok(Self {
+            id_message: row.try_get("id_message")?,
+            user_id: User { id_user: row.try_get("user_id")?, ..Default::default() },
+            content: row.try_get("content")?,
+        })
     }
 }
