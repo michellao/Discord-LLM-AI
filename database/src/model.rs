@@ -21,7 +21,7 @@ impl ToString for DataType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
+#[derive(Serialize, Deserialize, Debug, sqlx::FromRow, PartialEq, Eq)]
 pub struct User {
     pub id_user: Option<i64>,
     pub is_bot: Option<bool>,
@@ -49,6 +49,10 @@ impl Model for Message {
             0
         })
     }
+
+    fn set_id(&mut self, new_id: i64) {
+        self.id_message = Some(new_id);
+    }
 }
 
 impl Model for User {
@@ -65,12 +69,17 @@ impl Model for User {
             0
         })
     }
+
+    fn set_id(&mut self, new_id: i64) {
+        self.id_user = Some(new_id);
+    }
 }
 
 pub trait Model {
     fn to_data_type(&self) -> DataType;
     fn get_primary_key_name(&self) -> String;
     fn get_id(&self) -> i64;
+    fn set_id(&mut self, new_id: i64);
 }
 
 impl Default for Message {
