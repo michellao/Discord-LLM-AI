@@ -17,15 +17,15 @@ impl Database {
         ).execute(&conn).await.unwrap();
         sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS user_llm (
-                id_user SERIAL PRIMARY KEY,
+                id_user BIGSERIAL PRIMARY KEY,
                 is_bot BOOLEAN NOT NULL DEFAULT FALSE,
-                discord_id INTEGER NOT NULL
+                discord_id BIGINT NOT NULL
             );"
         ).execute(&conn).await.unwrap();
         sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS message (
-                id_message SERIAL PRIMARY KEY,
-                user_id INTEGER,
+                id_message BIGSERIAL PRIMARY KEY,
+                user_id BIGINT,
                 content TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES user_llm (id_user)
             )"
@@ -42,7 +42,7 @@ impl Database {
         sql
     }
 
-    fn match_last_returning_id(r: &PgRow, primary_key_name: &str) -> i32 {
+    fn match_last_returning_id(r: &PgRow, primary_key_name: &str) -> i64 {
         match r.try_get(primary_key_name) {
             Err(e) => {
                 println!("{}", e);
@@ -68,7 +68,7 @@ impl Database {
             Ok(r) => {
                 println!("{:?}", r);
                 let last_inserted_id = Self::match_last_returning_id(&r, &primary_key_name);
-                object.set_id(last_inserted_id.into());
+                object.set_id(last_inserted_id);
                 return last_inserted_id > 0;
             }
         }

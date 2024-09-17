@@ -1,37 +1,51 @@
-use database::model::{Model, User, Message};
+use database::{ model::{Message, User}, Database };
 
-pub struct UserController;
-pub struct MessageController;
-pub trait Controller {
-    fn new(id: Option<u64>) -> Self;
-    fn get(&self, id: u64) -> Box<dyn Model>;
-    fn create(&self, model: &impl Model) -> bool;
+pub struct UserController<'a> {
+    database: &'a mut Database
+}
+pub struct MessageController<'a> {
+    database: &'a mut Database
+}
+pub trait Controller<'a> {
+    type ModelController;
+    fn new(database: &'a mut Database) -> Self;
+    fn get(&self, id: i64) -> impl std::future::Future<Output = Option<Self::ModelController>> + Send;
 }
 
-impl Controller for UserController {
-    fn new(id: Option<u64>) -> Self {
-        UserController
+impl<'a> Controller<'a> for UserController<'a> {
+    type ModelController = User;
+
+    fn new(database: &'a mut Database) -> Self {
+        UserController {
+            database
+        }
     }
 
-    fn get(&self, id: u64) -> Box<dyn Model> {
-        Box::new(User {id_user: 43, discord_id: 43, is_bot: false})
-    }
-
-    fn create(&self, model: &impl Model) -> bool {
-        false
+    async fn get(&self, id: i64) -> Option<Self::ModelController> {
+        let object = Self::ModelController { id_user: Some(id), ..Default::default() };
+        let sql = self.database.select_from_id(&object);
+        let result: Option<Self::ModelController> = sqlx::query_as(&sql)
+            .fetch_optional(&self.database.conn)
+            .await.expect("Database error");
+        result
     }
 }
 
-impl Controller for MessageController {
-    fn new(id: Option<u64>) -> Self {
-        MessageController
+impl<'a> Controller<'a> for MessageController<'a> {
+    type ModelController = Message;
+
+    fn new(database: &'a mut Database) -> Self {
+        MessageController {
+            database
+        }
     }
 
-    fn get(&self, id_message: u64) -> Box<dyn Model> {
-        Box::new(Message { id_message: 43, user: User { id_user: 43, discord_id: 43, is_bot: false }, content: String::from("gdfgfdg") })
-    }
-
-    fn create(&self, model: &impl Model) -> bool {
-        false
+    async fn get(&self, id: i64) -> Option<Self::ModelController> {
+        let object = Self::ModelController { id_message: Some(id), ..Default::default() };
+        let sql = self.database.select_from_id(&object);
+        let result: Option<Self::ModelController> = sqlx::query_as(&sql)
+            .fetch_optional(&self.database.conn)
+            .await.expect("Database error");
+        result
     }
 }
