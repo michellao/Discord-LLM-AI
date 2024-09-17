@@ -1,6 +1,6 @@
 use serde::Serialize;
 use serde_json::{Map, Number, Value};
-use sqlx::{postgres::PgQueryResult, Error, Pool, Postgres};
+use sqlx::{postgres::PgRow, Error, Pool, Postgres};
 use crate::model::{DataType, Message, Model, User};
 
 pub struct FormatSql<'a, T> {
@@ -122,22 +122,7 @@ impl<'a, T: Serialize + Model> FormatSql<'a, T> {
         sql_format
     }
 
-    fn process_handle(&self, select_sql: &str) {
-        /* match self.model.to_data_type() {
-            DataType::Message => {
-                let handle = sqlx::query_as(select_sql);
-            },
-            DataType::User => {
-                let handle = sqlx::query_as(select_sql);
-            }
-        } */
-    }
-
-    pub async fn query_sql(&self, conn: &Pool<Postgres>, select_sql: &str) {
-        
-    }
-
-    pub async fn execute_sql(&self, conn: &Pool<Postgres>, sql: &str) -> Result<PgQueryResult, Error> {
+    pub async fn execute_sql(&self, conn: &Pool<Postgres>, sql: &str) -> Result<PgRow, Error> {
         let mut handle: sqlx::query::Query<'_, Postgres, _> = sqlx::query(sql);
         for v in self.object.values() {
             let convert = Self::convert_value(v);
@@ -156,7 +141,7 @@ impl<'a, T: Serialize + Model> FormatSql<'a, T> {
                 _ => handle = handle.bind(convert)
             }
         }
-        let result = handle.execute(conn).await;
+        let result = handle.fetch_one(conn).await;
         result
     }
 }
