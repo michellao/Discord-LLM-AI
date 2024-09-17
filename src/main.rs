@@ -8,13 +8,13 @@ use poise::serenity_prelude as serenity;
 use sqlx::postgres::PgPoolOptions;
 
 pub struct DataDiscord {
-    generation_ai: GenerationAI,
+    generation_ai: GenerationAI
 }
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, DataDiscord, Error>;
 
-fn setup_ai() -> GenerationAI {
+fn setup_ai(database: Database) -> GenerationAI {
     let host = std::env::var("LLAMACPP_HOST").expect("missing LLAMACPP_HOST");
     let port_string = std::env::var("LLAMACPP_PORT").expect("missing LLAMACPP_PORT");
     let text_model = std::env::var("TEXT_MODEL").expect("missing TEXT_MODEL");
@@ -22,7 +22,7 @@ fn setup_ai() -> GenerationAI {
         Ok(r) => r,
         Err(_) => panic!("Invalid port")
     };
-    GenerationAI::new(text_model, host, port)
+    GenerationAI::new(text_model, host, port, database)
 }
 
 #[tokio::main]
@@ -34,13 +34,14 @@ async fn main() -> Result<(), Error> {
     dotenv().ok();
 
     let database_uri = std::env::var("POSTGRES_URI").expect("missing POSTGRES_URI");
-
     let pool = PgPoolOptions::new()
-        .connect(&database_uri)
-        .await?;
-    let database = Database::new(&pool).await;
-    
-    let generation_ai = setup_ai();
+            .max_connections(5)
+            .connect(&database_uri)
+            .await?;
+
+    let database = Database::new(pool).await;
+
+    let generation_ai = setup_ai(database);
 
     let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;

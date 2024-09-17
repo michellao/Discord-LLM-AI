@@ -1,16 +1,17 @@
+use database::Database;
 use inference_ai::InferenceAI;
 use tokio::sync::Mutex;
 
 pub struct GenerationAI {
     model_name: String,
-    llamacpp: Mutex<InferenceAI>
+    llamacpp: Mutex<InferenceAI>,
 }
 
 impl GenerationAI {
-    pub fn new(model_name: String, host: String, port: u16) -> Self {
+    pub fn new(model_name: String, host: String, port: u16, database: Database) -> Self {
         Self {
             model_name: model_name.clone(),
-            llamacpp: Mutex::new(InferenceAI::new(model_name, host, port)),
+            llamacpp: Mutex::new(InferenceAI::new(model_name, host, port, database)),
         }
     }
 

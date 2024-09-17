@@ -2,26 +2,26 @@ pub mod model;
 mod format_sql;
 use format_sql::FormatSql;
 use model::Model;
-use sqlx::{Pool, Postgres, Row, postgres::PgRow};
+use sqlx::{postgres::PgRow, PgPool, Row};
 use serde::Serialize;
 
-pub struct Database<'a> {
-    pub conn: &'a Pool<Postgres>,
+pub struct Database {
+    pub conn: PgPool,
 }
 
-impl<'a> Database<'a> {
-    pub async fn new(conn: &'a Pool<Postgres>) -> Self {
+impl Database {
+    pub async fn new(conn: PgPool) -> Self {
         sqlx::raw_sql(
             "DROP TABLE IF EXISTS message;
             DROP TABLE IF EXISTS user_llm;",
-        ).execute(conn).await.unwrap();
+        ).execute(&conn).await.unwrap();
         sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS user_llm (
                 id_user SERIAL PRIMARY KEY,
                 is_bot BOOLEAN NOT NULL DEFAULT FALSE,
                 discord_id INTEGER NOT NULL
             );"
-        ).execute(conn).await.unwrap();
+        ).execute(&conn).await.unwrap();
         sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS message (
                 id_message SERIAL PRIMARY KEY,
@@ -29,7 +29,7 @@ impl<'a> Database<'a> {
                 content TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES user_llm (id_user)
             )"
-        ).execute(conn).await.unwrap();
+        ).execute(&conn).await.unwrap();
         Self {
             conn
         }
