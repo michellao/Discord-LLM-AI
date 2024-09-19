@@ -38,6 +38,19 @@ impl Database {
         sql
     }
 
+    pub fn select_from<T: Serialize + Model>(&self, object: &T, row_filter: &str) -> String {
+        let format_sql = FormatSql::new(object);
+        let rows_string = format_sql.format_rows_select();
+        let sql = format!(
+            "SELECT {} FROM {}
+            WHERE {} = $1",
+            rows_string,
+            object.to_data_type().to_string(),
+            row_filter
+        );
+        sql
+    }
+
     fn match_last_returning_id(r: &PgRow, primary_key_name: &str) -> i64 {
         match r.try_get(primary_key_name) {
             Err(e) => {
@@ -48,13 +61,12 @@ impl Database {
         }
     }
 
-    pub async fn insert<T: Serialize + Model>(&mut self, object: &mut T) -> bool {
+    pub async fn insert<T: Serialize + Model>(&self, object: &mut T) -> bool {
         let format_sql = FormatSql::new(object);
         let row_names = format_sql.format_rows_insert();
         let insert_values = format_sql.format_sql_set_placeholder();
         let primary_key_name = object.get_primary_key_name();
         let sql = format!("INSERT INTO {} ({}) VALUES ({}) RETURNING {}", object.to_data_type().to_string(), row_names, insert_values, primary_key_name);
-        println!("{}", sql);
         let result = format_sql.execute_sql(&self.conn, &sql).await;
         match result {
             Err(e) => {
@@ -70,12 +82,11 @@ impl Database {
         }
     }
 
-    pub async fn update<T: Serialize + Model>(&mut self, object: &T) -> bool {
+    pub async fn update<T: Serialize + Model>(&self, object: &T) -> bool {
         let format_sql = FormatSql::new(object);
         let format_sql_key = format_sql.format_sql_key_value();
         let primary_key_name = object.get_primary_key_name();
         let sql = format!("UPDATE {} SET {} WHERE {} = {} RETURNING {}", object.to_data_type().to_string(), format_sql_key, primary_key_name, object.get_id(), format_sql.format_rows_select());
-        println!("{}", sql);
         let result = format_sql.execute_sql(&self.conn, &sql).await;
         match result {
             Err(e) => {
@@ -89,7 +100,7 @@ impl Database {
         }
     }
 
-    pub async fn delete_object<T: Serialize + Model>(&mut self, object: &T) -> bool {
+    pub async fn delete_object<T: Serialize + Model>(&self, object: &T) -> bool {
         let format_sql = FormatSql::new(object);
         let sql = format!("DELETE FROM {} WHERE {} = {}", object.to_data_type().to_string(), object.get_primary_key_name(), object.get_id());
         let result = format_sql.execute_sql(&self.conn, &sql).await;
