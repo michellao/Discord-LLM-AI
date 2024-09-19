@@ -12,19 +12,15 @@ pub struct Database {
 impl Database {
     pub async fn new(conn: PgPool) -> Self {
         sqlx::raw_sql(
-            "DROP TABLE IF EXISTS message;
-            DROP TABLE IF EXISTS user_llm;",
-        ).execute(&conn).await.unwrap();
-        sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS user_llm (
-                id_user BIGSERIAL PRIMARY KEY,
+                id_user BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 is_bot BOOLEAN NOT NULL DEFAULT FALSE,
                 discord_id BIGINT NOT NULL
             );"
         ).execute(&conn).await.unwrap();
         sqlx::raw_sql(
             "CREATE TABLE IF NOT EXISTS message (
-                id_message BIGSERIAL PRIMARY KEY,
+                id_message BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                 user_id BIGINT,
                 content TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES user_llm (id_user)
