@@ -29,6 +29,7 @@ sqlx = { workspace = true }
 inference_ai = { path = "./inference_ai" }
 database = { path = "./database" }
 sentry = "0.34.0"
+controller = { workspace = true }
 
 [dependencies.serenity]
 default-features = false

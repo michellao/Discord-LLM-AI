@@ -161,6 +161,7 @@ dependencies = [
 name = "bot_ai"
 version = "0.1.0"
 dependencies = [
+ "controller",
  "database",
  "dotenv",
  "inference_ai",

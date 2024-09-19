@@ -1,5 +1,4 @@
 mod model;
-use database::Database;
 use reqwest::Client;
 
 use crate::model::*;
@@ -7,17 +6,16 @@ use crate::model::*;
 pub struct InferenceAI {
     client: Client,
     url: String,
-    pub completion_data: OpenAICompletion,
-    database: Database
+    pub completion_data: OpenAICompletion
 }
 
 impl InferenceAI {
-    pub fn new(model_name: String, host: String, port: u16, database: Database) -> Self {
+    pub fn new(model_name: String, host: String, port: u16) -> Self {
         let client = reqwest::Client::new();
         let port_string = port.to_string();
         let url = host + ":" + port_string.as_str();
         let completion_data = Self::initialize_openai_completion(model_name);
-        Self { client, url, completion_data, database }
+        Self { client, url, completion_data }
     }
 
     pub async fn completion(&mut self, new_text: &str) -> Option<String> {
