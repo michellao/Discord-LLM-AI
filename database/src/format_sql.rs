@@ -3,16 +3,15 @@ use serde_json::{Map, Number, Value};
 use sqlx::{postgres::PgRow, Error, Pool, Postgres};
 use crate::model::{DataType, Message, Model, User};
 
-pub struct FormatSql<'a, T> {
-    model: &'a T,
+pub struct FormatSql {
     object: Map<String, Value>,
 }
 
-impl<'a, T: Serialize + Model> FormatSql<'a, T> {
-    pub fn new(object: &'a T) -> Self {
+impl FormatSql {
+    pub fn new<T: Serialize + Model>(object: &T) -> Self {
         let serialize = serde_json::to_value(object).unwrap();
         let serialize_object = serialize.as_object().expect("Is normally a model");
-        Self { model: object, object: serialize_object.to_owned() }
+        Self { object: serialize_object.to_owned() }
     }
 
     /// For example
