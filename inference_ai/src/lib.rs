@@ -7,7 +7,7 @@ use crate::model::*;
 pub struct InferenceAI {
     client: Client,
     url: String,
-    pub completion_data: OpenAICompletion
+    completion_data: OpenAICompletion
 }
 
 impl InferenceAI {
