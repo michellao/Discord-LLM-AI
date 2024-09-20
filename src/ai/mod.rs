@@ -24,6 +24,6 @@ impl GenerationAI {
 
     pub async fn clear_conversation(&self) {
         let mut llamacpp = self.llamacpp.lock().await;
-        llamacpp.completion_data = InferenceAI::initialize_openai_completion(self.model_name.clone());
+        llamacpp.reset_openai_completion(self.model_name.clone());
     }
 }
