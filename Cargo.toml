@@ -13,6 +13,7 @@ tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 dotenv = "0.15.0"
+inference_ai = { path = "./inference_ai" }
 
 [package]
 name = "bot_ai"
@@ -26,7 +27,7 @@ tokio = { workspace = true }
 poise = "0.6"
 dotenv = { workspace = true }
 sqlx = { workspace = true }
-inference_ai = { path = "./inference_ai" }
+inference_ai = { workspace = true }
 database = { path = "./database" }
 sentry = "0.34.0"
 controller = { workspace = true }
