@@ -28,11 +28,13 @@ fn setup_ai() -> GenerationAI {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let _guard = sentry::init(("https://bf6bfdebe100d884bbbcc932d54c73ba@o4507341534068736.ingest.de.sentry.io/4507392043712592", sentry::ClientOptions {
-        release: sentry::release_name!(),
-        ..Default::default()
-    }));
     dotenv().ok();
+    if let Ok(sentry_url) = std::env::var("SENTRY_URL") {
+        let _guard = sentry::init((sentry_url, sentry::ClientOptions {
+            release: sentry::release_name!(),
+            ..Default::default()
+        }));
+    }
 
     let database_uri = std::env::var("POSTGRES_URI").expect("missing POSTGRES_URI");
     let pool = PgPoolOptions::new()
