@@ -1,0 +1,6 @@
+-- Your SQL goes here
+CREATE TABLE user_llm (
+    id_user BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    is_bot BOOLEAN NOT NULL DEFAULT FALSE,
+    discord_id BIGINT NOT NULL
+);

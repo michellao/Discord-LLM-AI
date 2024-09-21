@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 serde = { workspace = true }
-sqlx = { workspace = true }
+diesel = { workspace = true }
 serde_json = { workspace = true }

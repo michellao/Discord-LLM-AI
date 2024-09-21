@@ -8,7 +8,7 @@ members = [
 [workspace.dependencies]
 controller = { path = "./controller" }
 database = { path = "./database" }
-sqlx = { version = "0.8", features = [ "runtime-tokio", "tls-native-tls", "derive", "sqlite", "postgres", "json" ] }
+diesel = { version = "2.2.0", features = ["postgres"] }
 tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -26,7 +26,7 @@ edition = "2021"
 tokio = { workspace = true }
 poise = "0.6"
 dotenv = { workspace = true }
-sqlx = { workspace = true }
+diesel = { workspace = true }
 inference_ai = { workspace = true }
 database = { path = "./database" }
 sentry = "0.34.0"

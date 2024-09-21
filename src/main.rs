@@ -2,10 +2,10 @@ mod ai;
 mod commands;
 
 use database::Database;
+use diesel::{Connection, PgConnection};
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
-use sqlx::postgres::PgPoolOptions;
 
 pub struct DataDiscord {
     generation_ai: GenerationAI,
@@ -36,11 +36,8 @@ async fn main() -> Result<(), Error> {
         }));
     }
 
-    let database_uri = std::env::var("POSTGRES_URI").expect("missing POSTGRES_URI");
-    let pool = PgPoolOptions::new()
-            .max_connections(5)
-            .connect(&database_uri)
-            .await?;
+    let database_uri = std::env::var("DATABASE_URL").expect("missing DATABASE_URL");
+    let pool = PgConnection::establish(&database_url)?;
 
     let database = Database::new(pool).await;
 
