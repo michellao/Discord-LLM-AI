@@ -2,15 +2,20 @@ use diesel::PgConnection;
 
 pub mod model;
 pub mod schema;
+pub mod controller;
 
 pub struct Database {
-    pub conn: PgConnection,
+    conn: PgConnection,
 }
 
 impl Database {
-    pub async fn new(conn: PgConnection) -> Self {
+    pub fn new(conn: PgConnection) -> Self {
         Self {
             conn
         }
+    }
+
+    pub fn get_connection(&mut self) -> &mut PgConnection {
+        &mut self.conn
     }
 }
