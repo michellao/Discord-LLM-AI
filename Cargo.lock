@@ -125,7 +125,6 @@ dependencies = [
 name = "bot_ai"
 version = "0.1.0"
 dependencies = [
- "controller",
  "database",
  "diesel",
  "dotenv",
@@ -228,14 +227,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "controller"
-version = "0.1.0"
-dependencies = [
- "database",
- "diesel",
 ]
 
 [[package]]

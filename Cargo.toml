@@ -1,12 +1,10 @@
 [workspace]
 members = [
-    "controller",
     "database",
     "inference_ai"
 ]
 
 [workspace.dependencies]
-controller = { path = "./controller" }
 database = { path = "./database" }
 diesel = { version = "2.2.0", features = ["postgres"] }
 tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
@@ -30,7 +28,6 @@ diesel = { workspace = true }
 inference_ai = { workspace = true }
 database = { path = "./database" }
 sentry = "0.34.0"
-controller = { workspace = true }
 
 [dependencies.serenity]
 default-features = false
