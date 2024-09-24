@@ -9,8 +9,8 @@ diesel::table! {
 diesel::table! {
     message (id_message) {
         id_message -> Int8,
-        user_id -> Nullable<Int8>,
-        conversation_id -> Nullable<Int8>,
+        user_id -> Int8,
+        conversation_id -> Int8,
         content -> Text,
     }
 }
