@@ -3,6 +3,7 @@ use diesel::PgConnection;
 pub mod model;
 pub mod schema;
 pub mod controller;
+pub mod insert_model;
 
 pub struct Database {
     conn: PgConnection,
