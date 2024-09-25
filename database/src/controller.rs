@@ -10,7 +10,7 @@ pub struct MessageController<'a> {
 }
 
 impl<'a> UserController<'a> {
-    pub async fn get_by_discord_id(&self, disco_id: i64) -> Option<User> {
+    pub fn get_by_discord_id(&mut self, disco_id: i64) -> Option<User> {
         use crate::schema::user_llm::dsl::*;
         let connection = self.database.get_connection();
         let result = user_llm
@@ -25,7 +25,7 @@ impl<'a> UserController<'a> {
 }
 
 impl<'a> MessageController<'a> {
-    pub async fn get_by_user(&self, user: &User) -> Vec<Message> {
+    pub fn get_by_user(&mut self, user: &User) -> Vec<Message> {
         use crate::schema::message::dsl::*;
         let connection = self.database.get_connection();
         let result = message
@@ -35,7 +35,7 @@ impl<'a> MessageController<'a> {
         result.unwrap_or_else(|_| vec![])
     }
 
-    pub async fn delete_messages_by_user(&self, user: &User) -> bool {
+    pub fn delete_messages_by_user(&mut self, user: &User) -> bool {
         use crate::schema::message::dsl::*;
         let connection = self.database.get_connection();
         let result = diesel::delete(message.filter(user_id.eq(user.id())))
@@ -50,7 +50,7 @@ impl<'a> MessageController<'a> {
 pub trait Controller<'a> {
     type ModelController;
     fn new(database: &'a mut Database) -> Self;
-    fn get(&self, id: i64) -> Self::ModelController;
+    fn get(&mut self, id: i64) -> Option<Self::ModelController>;
 }
 
 impl<'a> Controller<'a> for UserController<'a> {
@@ -62,7 +62,7 @@ impl<'a> Controller<'a> for UserController<'a> {
         }
     }
 
-    fn get(&self, id: i64) -> Option<User> {
+    fn get(&mut self, id: i64) -> Option<Self::ModelController> {
         use crate::schema::user_llm::dsl::*;
         let connection = self.database.get_connection();
         let result = user_llm
@@ -85,7 +85,7 @@ impl<'a> Controller<'a> for MessageController<'a> {
         }
     }
 
-    fn get(&self, id: i64) -> Option<Message> {
+    fn get(&mut self, id: i64) -> Option<Self::ModelController> {
         use crate::schema::message::dsl::*;
         let connection = self.database.get_connection();
         let result = message
