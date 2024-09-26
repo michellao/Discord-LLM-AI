@@ -52,11 +52,11 @@ impl<'a> Controller<'a> for MessageController<'a> {
         }
     }
 
-    fn insert(&mut self, model: Self::InsertionModel) -> Self::ModelController {
+    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController {
         use crate::schema::message;
         let connection = self.database.get_connection();
         let result = diesel::insert_into(message::table)
-            .values(&model)
+            .values(model)
             .returning(Message::as_returning())
             .get_result(connection)
             .expect("Error saving new user");

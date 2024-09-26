@@ -7,5 +7,5 @@ pub trait Controller<'a> {
     type InsertionModel;
     fn new(database: &'a mut Database) -> Self;
     fn get(&mut self, id: i64) -> Option<Self::ModelController>;
-    fn insert(&mut self, model: Self::InsertionModel) -> Self::ModelController;
+    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController;
 }

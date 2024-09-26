@@ -44,11 +44,11 @@ impl<'a> Controller<'a> for UserController<'a> {
         }
     }
 
-    fn insert(&mut self, model: Self::InsertionModel) -> Self::ModelController {
+    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController {
         use crate::schema::user_llm;
         let connection = self.database.get_connection();
         let result = diesel::insert_into(user_llm::table)
-            .values(&model)
+            .values(model)
             .returning(User::as_returning())
             .get_result(connection)
             .expect("Error saving new user");
