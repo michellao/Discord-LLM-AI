@@ -3,7 +3,7 @@ use super::Controller;
 use diesel::prelude::*;
 
 pub struct ConversationController<'a> {
-    database: &'a mut Database
+    database: &'a Database
 }
 
 impl<'a> ConversationController<'a> {
@@ -13,15 +13,15 @@ impl<'a> Controller<'a> for ConversationController<'a> {
     type ModelController = Conversation;
     type InsertionModel = Conversation;
 
-    fn new(database: &'a mut Database) -> Self {
+    fn new(database: &'a Database) -> Self {
         Self {
             database
         }
     }
 
-    fn get(&mut self, id: i64) -> Option<Self::ModelController> {
+    fn get(&self, id: i64) -> Option<Self::ModelController> {
         use crate::schema::conversation::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = conversation
             .filter(id_conversation.eq(id))
             .select(Conversation::as_select())
@@ -32,9 +32,9 @@ impl<'a> Controller<'a> for ConversationController<'a> {
         }
     }
 
-    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController {
+    fn insert(&self, model: &Self::InsertionModel) -> Self::ModelController {
         use crate::schema::conversation;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = diesel::insert_into(conversation::table)
             .values(model)
             .returning(Conversation::as_returning())

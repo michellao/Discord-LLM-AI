@@ -3,13 +3,13 @@ use super::Controller;
 use diesel::prelude::*;
 
 pub struct MessageController<'a> {
-    database: &'a mut Database
+    database: &'a Database
 }
 
 impl<'a> MessageController<'a> {
-    pub fn get_by_user(&mut self, user: &User) -> Vec<Message> {
+    pub fn get_by_user(&self, user: &User) -> Vec<Message> {
         use crate::schema::message::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = message
             .filter(user_id.eq(user.id()))
             .select(Message::as_select())
@@ -17,9 +17,9 @@ impl<'a> MessageController<'a> {
         result.unwrap_or_else(|_| vec![])
     }
 
-    pub fn delete_messages_by_user(&mut self, user: &User) -> bool {
+    pub fn delete_messages_by_user(&self, user: &User) -> bool {
         use crate::schema::message::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = diesel::delete(message.filter(user_id.eq(user.id())))
             .execute(connection);
         match result {
@@ -33,15 +33,15 @@ impl<'a> Controller<'a> for MessageController<'a> {
     type ModelController = Message;
     type InsertionModel = NewMessage<'a>;
 
-    fn new(database: &'a mut Database) -> Self {
+    fn new(database: &'a Database) -> Self {
         MessageController {
             database
         }
     }
 
-    fn get(&mut self, id: i64) -> Option<Self::ModelController> {
+    fn get(&self, id: i64) -> Option<Self::ModelController> {
         use crate::schema::message::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = message
             .filter(id_message.eq(id))
             .select(Message::as_select())
@@ -52,9 +52,9 @@ impl<'a> Controller<'a> for MessageController<'a> {
         }
     }
 
-    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController {
+    fn insert(&self, model: &Self::InsertionModel) -> Self::ModelController {
         use crate::schema::message;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = diesel::insert_into(message::table)
             .values(model)
             .returning(Message::as_returning())

@@ -2,7 +2,6 @@ mod ai;
 mod commands;
 
 use database::Database;
-use diesel::{Connection, PgConnection};
 use dotenv::dotenv;
 use ai::GenerationAI;
 use poise::serenity_prelude as serenity;
@@ -36,10 +35,9 @@ async fn main() -> Result<(), Error> {
         }));
     }
 
-    let database_uri = std::env::var("DATABASE_URL").expect("missing DATABASE_URL");
-    let pool = PgConnection::establish(&database_url)?;
+    let database_url = std::env::var("DATABASE_URL").expect("missing DATABASE_URL");
 
-    let database = Database::new(pool).await;
+    let database = Database::new(database_url);
 
     let generation_ai = setup_ai();
 

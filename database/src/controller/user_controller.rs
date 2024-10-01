@@ -3,13 +3,13 @@ use super::Controller;
 use diesel::prelude::*;
 
 pub struct UserController<'a> {
-    database: &'a mut Database
+    database: &'a Database
 }
 
 impl<'a> UserController<'a> {
-    pub fn get_by_discord_id(&mut self, discord: &i64) -> Option<User> {
+    pub fn get_by_discord_id(&self, discord: &i64) -> Option<User> {
         use crate::schema::user_llm::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = user_llm
             .filter(discord_id.eq(discord))
             .select(User::as_select())
@@ -25,15 +25,15 @@ impl<'a> Controller<'a> for UserController<'a> {
     type ModelController = User;
     type InsertionModel = NewUser;
 
-    fn new(database: &'a mut Database) -> Self {
+    fn new(database: &'a Database) -> Self {
         UserController {
             database
         }
     }
 
-    fn get(&mut self, id: i64) -> Option<Self::ModelController> {
+    fn get(&self, id: i64) -> Option<Self::ModelController> {
         use crate::schema::user_llm::dsl::*;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = user_llm
             .filter(id_user.eq(id))
             .select(User::as_select())
@@ -44,9 +44,9 @@ impl<'a> Controller<'a> for UserController<'a> {
         }
     }
 
-    fn insert(&mut self, model: &Self::InsertionModel) -> Self::ModelController {
+    fn insert(&self, model: &Self::InsertionModel) -> Self::ModelController {
         use crate::schema::user_llm;
-        let connection = self.database.get_connection();
+        let connection = &mut self.database.get_connection();
         let result = diesel::insert_into(user_llm::table)
             .values(model)
             .returning(User::as_returning())
