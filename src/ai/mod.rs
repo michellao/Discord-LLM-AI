@@ -16,10 +16,7 @@ impl GenerationAI {
 
     pub async fn generate(&self, prompt: &str) -> String {
         let mut llamacpp = self.llamacpp.lock().await;
-        match llamacpp.completion(prompt).await {
-            None => String::from("Error completion"),
-            Some(response) => response
-        }
+        llamacpp.completion(prompt).await.unwrap_or_else(|| String::from("Error completion"))
     }
 
     pub async fn clear_conversation(&self) {
