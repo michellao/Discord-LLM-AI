@@ -7,11 +7,11 @@ pub struct UserController<'a> {
 }
 
 impl<'a> UserController<'a> {
-    pub fn get_by_discord_id(&mut self, disco_id: i64) -> Option<User> {
+    pub fn get_by_discord_id(&mut self, discord: &i64) -> Option<User> {
         use crate::schema::user_llm::dsl::*;
         let connection = self.database.get_connection();
         let result = user_llm
-            .filter(discord_id.eq(disco_id))
+            .filter(discord_id.eq(discord))
             .select(User::as_select())
             .first(connection);
         match result {
@@ -23,7 +23,7 @@ impl<'a> UserController<'a> {
 
 impl<'a> Controller<'a> for UserController<'a> {
     type ModelController = User;
-    type InsertionModel = NewUser<'a>;
+    type InsertionModel = NewUser;
 
     fn new(database: &'a mut Database) -> Self {
         UserController {

@@ -3,9 +3,9 @@ use diesel::Insertable;
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::user_llm)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct NewUser<'a> {
-    pub is_bot: &'a bool,
-    pub discord_id: &'a i64
+pub struct NewUser {
+    pub is_bot: bool,
+    pub discord_id: i64
 }
 
 #[derive(Insertable)]

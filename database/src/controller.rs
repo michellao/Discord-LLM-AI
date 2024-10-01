@@ -1,6 +1,8 @@
 use crate::Database;
 pub mod message_controller;
 pub mod user_controller;
+pub mod conversation_controller;
+pub mod user_conversation_controller;
 
 pub trait Controller<'a> {
     type ModelController;
