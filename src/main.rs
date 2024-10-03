@@ -1,5 +1,6 @@
 mod ai;
 mod commands;
+mod utility;
 
 use database::Database;
 use dotenv::dotenv;

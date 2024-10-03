@@ -1,32 +1,7 @@
-use controller::{Controller, UserController};
-use database::{model::{Message, User}, Database};
-use crate::{Context,Error};
-
-async fn get_from_database_or_create_user(user_controller: &UserController<'_>, database: &Database, author: &serenity::model::prelude::User) -> User {
-    let discord_id = i64::try_from(author.id.get()).expect("Overflow i64 on discord_id");
-    let author_user = match user_controller.get_by_discord_id(discord_id).await {
-        None => {
-            let mut u = User { is_bot: Some(author.bot), discord_id, ..Default::default() };
-            let _r = database.insert(&mut u).await;
-            u
-        }
-        Some(a) => a
-    };
-    author_user
-}
-
-async fn get_from_database_or_create_bot_user(user_controller: &UserController<'_>, database: &Database, ctx: Context<'_>) -> User {
-    let discord_id = i64::try_from(ctx.cache().current_user().id.get()).expect("Overflow i64 on discord_id");
-    let user = match user_controller.get_by_discord_id(discord_id).await {
-        None => {
-            let mut u = User { is_bot: Some(ctx.cache().current_user().bot), discord_id, ..Default::default() };
-            database.insert(&mut u).await;
-            u
-        }
-        Some(a) => a
-    };
-    user
-}
+use database::{controller::Controller, insert_model::NewMessage};
+use database::controller::{message_controller::MessageController, user_controller::UserController, user_conversation_controller::UserConversationController};
+use crate::{Context, Error};
+use crate::utility::{get_from_database_or_create_bot_user, get_from_database_or_create_user, retrieve_conversation};
 
 /// Response by an AI
 #[poise::command(slash_command)]
@@ -44,25 +19,29 @@ pub async fn text(
 
     let database = &ctx.data().database;
     let user_controller = UserController::new(database);
-    let author_user = ctx.author();
-    let author_bot = get_from_database_or_create_bot_user(&user_controller, database, ctx).await;
-    let author_model_user = get_from_database_or_create_user(&user_controller, database, author_user).await;
-    println!("{:?}", author_model_user);
+    let message_controller = MessageController::new(database);
+    let user_conversation_controller = UserConversationController::new(database);
+
+    let author_bot = get_from_database_or_create_bot_user(&user_controller, &ctx);
+    let author_model_user = get_from_database_or_create_user(&user_controller, &ctx);
+    let conversation = retrieve_conversation(&user_conversation_controller, &author_model_user);
+    let messages = message_controller.get_by_conversation(&conversation);
+    generation_ai.init_conversation(messages).await;
 
     let response = generation_ai.generate(&prompt).await;
 
-    let mut message_from_user = Message { user_id: author_model_user, content: prompt, ..Default::default() };
-    database.insert(&mut message_from_user).await;
+    let message_from_user = NewMessage { user_id: &author_model_user.id_user, content: &prompt, conversation_id: &conversation.id_conversation };
+    message_controller.insert(&message_from_user);
 
     println!("Complete response: {}", response);
-    let lenght_response = response.len();
+    let length_response = response.len();
     let character_limit = 2000;
-    let mut message_from_bot = Message { user_id: author_bot, content: response.to_owned(), ..Default::default() };
-    database.insert(&mut message_from_bot).await;
+    let message_from_bot = NewMessage { user_id: &author_bot.id_user, content: &response, conversation_id: &conversation.id_conversation };
+    message_controller.insert(&message_from_bot);
     let mut complete_response: Vec<&str> = vec![];
-    if lenght_response > character_limit {
+    if length_response > character_limit {
         let mut response_to_divide = response.as_str();
-        let nb_divide = lenght_response / character_limit;
+        let nb_divide = length_response / character_limit;
         for _i in 0..nb_divide {
             let split_response = response_to_divide.split_at(character_limit);
             complete_response.push(split_response.0);
@@ -72,8 +51,6 @@ pub async fn text(
     } else {
         complete_response.push(response.as_str());
     }
-
-    println!("Separate response: {:?}", complete_response);
 
     for answer in 0..complete_response.len() {
         if answer == 0 {
@@ -98,8 +75,18 @@ pub async fn text(
 pub async fn clear_conversation(
     ctx: Context<'_>,
 ) -> Result<(), Error> {
+    let database = &ctx.data().database;
+    let user_controller = UserController::new(database);
     let generation_ai = &ctx.data().generation_ai;
+    let author_user = get_from_database_or_create_user(&user_controller, &ctx);
+
+    let message_controller = MessageController::new(database);
+    let is_success = message_controller.delete_messages_by_user(&author_user);
+
     generation_ai.clear_conversation().await;
+    if is_success {
+        ctx.say("Delete on database").await?;
+    }
     ctx.say("Clear all previous messages").await?;
     Ok(())
 }
