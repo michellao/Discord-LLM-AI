@@ -2,7 +2,7 @@
 
 diesel::table! {
     conversation (id_conversation) {
-        id_conversation -> Nullable<Int8>,
+        id_conversation -> Int8,
     }
 }
 

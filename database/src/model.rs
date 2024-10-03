@@ -15,7 +15,7 @@ pub struct User {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(id_conversation))]
 pub struct Conversation {
-    pub id_conversation: Option<i64>
+    pub id_conversation: i64
 }
 
 #[derive(Debug, Queryable, Identifiable, Selectable, Insertable, Associations, PartialEq)]

@@ -1,6 +1,5 @@
-use crate::{model::{Conversation, User, UserConversation}, Database};
+use crate::{insert_model::NewConversation, model::{Conversation, User, UserConversation}, Database};
 use diesel::prelude::*;
-
 use super::{conversation_controller::ConversationController, Controller};
 
 pub struct UserConversationController<'a> {
@@ -26,10 +25,10 @@ impl<'a> UserConversationController<'a> {
     }
 
     pub fn new_conversation(&self, user: &User) -> Conversation {
-        let new_conversation = Conversation { id_conversation: None };
+        let new_conversation = NewConversation { id_conversation: None };
         let conversation_controller = ConversationController::new(&self.database);
         let conversation = conversation_controller.insert(&new_conversation);
-        let conversation_user = UserConversation { conversation_id: conversation.id_conversation.expect("Error saving conversation to database"), user_id: user.id_user };
+        let conversation_user = UserConversation { conversation_id: conversation.id_conversation, user_id: user.id_user };
         self.insert(&conversation_user);
         conversation
     }

@@ -16,3 +16,10 @@ pub struct NewMessage<'a> {
     pub content: &'a str,
     pub conversation_id: &'a i64
 }
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::conversation)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewConversation {
+    pub id_conversation: Option<i64>
+}

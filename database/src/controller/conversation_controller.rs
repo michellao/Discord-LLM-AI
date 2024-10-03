@@ -1,4 +1,4 @@
-use crate::{model::Conversation, Database};
+use crate::{insert_model::NewConversation, model::Conversation, Database};
 use super::Controller;
 use diesel::prelude::*;
 
@@ -11,7 +11,7 @@ impl<'a> ConversationController<'a> {
 
 impl<'a> Controller<'a> for ConversationController<'a> {
     type ModelController = Conversation;
-    type InsertionModel = Conversation;
+    type InsertionModel = NewConversation;
 
     fn new(database: &'a Database) -> Self {
         Self {
