@@ -1,5 +1,7 @@
 use inference_ai::InferenceAI;
 use tokio::sync::Mutex;
+use database::model::{Message as MessageDb, User};
+use inference_ai::model::{Message, Role};
 
 pub struct GenerationAI {
     model_name: String,
@@ -21,6 +23,21 @@ impl GenerationAI {
 
     pub async fn clear_conversation(&self) {
         let mut llamacpp = self.llamacpp.lock().await;
-        llamacpp.reset_openai_completion(self.model_name.clone());
+        llamacpp.reset_openai_completion(self.model_name.to_owned());
+    }
+
+    pub async fn init_conversation(&self, messages: Vec<(User, MessageDb)>) {
+        let mut openai_completion = InferenceAI::initialize_openai_completion(self.model_name.to_owned());
+        for (u, m) in messages {
+            let role = if u.is_bot {
+                Role::Assistant
+            } else {
+                Role::User
+            };
+            let message = Message { content: m.content, role };
+            openai_completion.new_message(message);
+        }
+        let mut llamacpp = self.llamacpp.lock().await;
+        llamacpp.set_openai_completion(openai_completion);
     }
 }
