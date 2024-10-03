@@ -1,6 +1,7 @@
 use crate::{insert_model::NewMessage, model::{Message, User}, Database};
 use super::Controller;
 use diesel::prelude::*;
+use crate::model::Conversation;
 
 pub struct MessageController<'a> {
     database: &'a Database
@@ -8,13 +9,23 @@ pub struct MessageController<'a> {
 
 impl<'a> MessageController<'a> {
     pub fn get_by_user(&self, user: &User) -> Vec<Message> {
-        use crate::schema::message::dsl::*;
         let connection = &mut self.database.get_connection();
-        let result = message
-            .filter(user_id.eq(user.id()))
+        let result = Message::belonging_to(user)
             .select(Message::as_select())
-            .load(connection);
-        result.unwrap_or_else(|_| vec![])
+            .get_results(connection)
+            .unwrap_or_default();
+        result
+    }
+
+    pub fn get_by_conversation(&self, conversation: &Conversation) -> Vec<(User, Message)> {
+        use crate::schema::user_llm;
+        let connection = &mut self.database.get_connection();
+        let messages_in_conversation = Message::belonging_to(conversation)
+            .inner_join(user_llm::table)
+            .select((User::as_select(), Message::as_select()))
+            .load::<(User, Message)>(connection)
+            .expect("Error loading conversations");
+        messages_in_conversation
     }
 
     pub fn delete_messages_by_user(&self, user: &User) -> bool {
