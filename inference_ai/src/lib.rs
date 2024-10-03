@@ -1,5 +1,4 @@
 pub mod model;
-use database::model::Message as MessageDb;
 use reqwest::Client;
 
 use crate::model::*;
@@ -23,23 +22,6 @@ impl InferenceAI {
         self.completion_data = completion_data;
     }
 
-    pub fn set_messages(&mut self, messages: Vec<MessageDb>) {
-        for m in messages {
-            let role = match m.user_id.is_bot {
-                None => Role::User,
-                Some(b) => {
-                    if b {
-                        Role::Assistant
-                    } else {
-                        Role::User
-                    }
-                },
-            };
-            let message_api = Message { content: m.content, role };
-            self.completion_data.new_message(message_api);
-        }
-    }
-
     pub async fn completion(&mut self, new_text: &str) -> Option<String> {
         let message = Message::new(new_text.to_string(), Role::User);
         self.completion_data.new_message(message);
@@ -61,7 +43,7 @@ impl InferenceAI {
         }
     }
 
-    fn initialize_openai_completion(model_name: String) -> OpenAICompletion {
+    pub fn initialize_openai_completion(model_name: String) -> OpenAICompletion {
         let system_prompt = Message::new(String::from("You are helpful, kind, honest, friendly, good at writing and never fails to answer any requests immediately and with details and precision."), Role::System);
         let messages = vec![system_prompt];
         OpenAICompletion::new(model_name, messages, None, None)
