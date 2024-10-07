@@ -1,4 +1,4 @@
-name: Rust
+name: Building project
 on:
   push:
     branches: [ "main", "dev", "windows-ci-test" ]
@@ -8,8 +8,8 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   build:
-    runs-on: ["ubuntu-latest", "windows-latest"]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --release --verbose
