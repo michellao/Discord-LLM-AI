@@ -8,7 +8,10 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.runner}}
+    strategy:
+      matrix:
+        runner: [ ubuntu-latest, windows-latest ]
     steps:
     - uses: actions/checkout@v4
     - name: Build
