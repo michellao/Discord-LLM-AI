@@ -1,0 +1,32 @@
+name: Building project
+on:
+  push:
+    branches: [ "main", "dev", "windows-ci-test" ]
+  pull_request:
+    branches: [ "main" ]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+    - name: Clone
+      uses: actions/checkout@v4
+    - name: Cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Set path library PostgreSQL
+      if: runner.os == 'Windows'
+      run: echo "$env:PGROOT\lib" >> $env:GITHUB_PATH
+    - name: Build
+      run: cargo build --release --verbose
