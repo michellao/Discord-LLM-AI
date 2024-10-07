@@ -4,7 +4,7 @@
 
 Requirements:
 
-* llama.cpp or mistral.rs server API
+* llama.cpp or mistral.rs server API or an OpenAI API compatible
 * rustup
 * Database Postgres
 
