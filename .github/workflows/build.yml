@@ -30,6 +30,9 @@ jobs:
       run: |
         ls $env:PGROOT
         ls $env:PGROOT\lib
+        echo $env:GITHUB_PATH
+        cat $env:PGROOT\pg_env.bat
         echo "$env:PGROOT\lib" >> $env:GITHUB_PATH
+        echo $env:GITHUB_PATH
     - name: Build
       run: cargo build --release --verbose
