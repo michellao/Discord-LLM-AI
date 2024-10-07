@@ -25,11 +25,10 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Install libpq
+    - name: Set lib postgres to PATH
       if: runner.os == 'Windows'
       run: |
-        ls $env:PGROOT
-        ls "$env:PGROOT\lib"
-        ls $env:PGBIN
-    # - name: Build
-    #   run: cargo build --release --verbose
+        "$env:PGROOT" | Out-File -FilePath $env:GITHUB_PATH -Append
+        "$env:PGBIN" | Out-File -FilePath $env:GITHUB_PATH -Append
+    - name: Build
+      run: cargo build --release --verbose
