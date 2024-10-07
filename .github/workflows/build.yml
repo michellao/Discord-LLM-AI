@@ -28,8 +28,7 @@ jobs:
     - name: Set path library PostgreSQL
       if: runner.os == 'Windows'
       run: |
-        Get-Content -Path "$env:GITHUB_PATH"
-        Add-Content -Path $env:GITHUB_PATH -Value "$env:PGROOT\lib"
+        "$env:PGROOT\lib" >> $env:GITHUB_PATH
         echo $env:PATH
     - name: Build
       run: cargo build --release --verbose
