@@ -6,6 +6,8 @@ on:
         required: true
         type: string
 jobs:
+  clone:
+    uses: actions/checkout@v4
   cache:
     uses: actions/cache@v4
     with:
