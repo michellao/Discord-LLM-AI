@@ -28,7 +28,7 @@ jobs:
     - name: Set path library PostgreSQL
       if: runner.os == 'Windows'
       run: |
-        echo "$env:PGROOT\lib"
+        Get-Content -Path "$env:GITHUB_PATH"
         Add-Content -Path $env:GITHUB_PATH -Value "$env:PGROOT\lib"
         echo $env:PATH
     - name: Build
