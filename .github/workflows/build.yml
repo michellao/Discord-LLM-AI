@@ -27,6 +27,9 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Set path library PostgreSQL
       if: runner.os == 'Windows'
-      run: echo "$env:PGROOT\lib" >> $env:GITHUB_PATH
+      run: |
+        ls $env:PGROOT
+        ls $env:PGROOT\lib
+        echo "$env:PGROOT\lib" >> $env:GITHUB_PATH
     - name: Build
       run: cargo build --release --verbose
