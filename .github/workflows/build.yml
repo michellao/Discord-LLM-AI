@@ -31,11 +31,9 @@ jobs:
         "$env:PGBIN" | Out-File -FilePath $env:GITHUB_PATH -Append
     - name: Build
       run: cargo build --release --verbose
-    - name: Listing
-      run: ls ./target/release
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: discord_llm_ai-${{ matrix.os }}-${{ github.sha }}
-        path: ./target/release/discord_bot_ai
+        path: ./target/release/discord_bot_ai(.exe)?
         compression-level: 0
