@@ -35,5 +35,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: discord_llm_ai-${{ matrix.os }}-${{ github.sha }}
-        path: ./target/release/discord_bot_ai(\.exe)?
+        path: |
+          ./target/release/discord_bot_ai
+          ./target/release/discord_bot_ai.exe
         compression-level: 0
