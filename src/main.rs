@@ -64,6 +64,7 @@ async fn main() -> Result<(), Error> {
     let client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
         .await;
+    println!("Ready!");
     client.unwrap().start().await.unwrap();
     Ok(())
 }
