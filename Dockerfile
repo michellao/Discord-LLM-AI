@@ -8,6 +8,6 @@ USER bot
 
 WORKDIR /app
 
-COPY --chown=bot:bot ./target/release/discord_llm_ai .
+COPY --chown=bot:bot ./target/release/discord_bot_ai .
 
-ENTRYPOINT [ "/app/discord_llm_ai" ]
+ENTRYPOINT [ "/app/discord_bot_ai" ]
