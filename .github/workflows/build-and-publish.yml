@@ -9,16 +9,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 jobs:
-  build-and-publish-docker-image:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
     steps:
     - name: Clone
       uses: actions/checkout@v4
@@ -38,29 +33,46 @@ jobs:
         "$env:PGBIN" | Out-File -FilePath $env:GITHUB_PATH -Append
     - name: Build
       run: cargo build --release --verbose
-    - name: Log in to Container registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: discord_llm_ai-${{ matrix.os }}-${{ github.sha }}
+        name: discord_llm_ai-${{ runner.os }}-${{ github.sha }}
         path: |
           ./target/release/discord_bot_ai
           ./target/release/discord_bot_ai.exe
         compression-level: 0
+  download-artifact-and-push-image:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: discord_llm_ai-${{ runner.os }}-${{ github.sha }}
+      - name: Listing structure folders
+        run: ls -R
+      - name: Log in to Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
