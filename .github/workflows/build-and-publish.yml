@@ -1,17 +1,24 @@
 name: Building project
 on:
   push:
-    branches: [ "main", "dev", "windows-ci" ]
+    branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main" ]
 env:
   CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
-  build:
+  build-and-publish-docker-image:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
     - name: Clone
       uses: actions/checkout@v4
@@ -31,6 +38,24 @@ jobs:
         "$env:PGBIN" | Out-File -FilePath $env:GITHUB_PATH -Append
     - name: Build
       run: cargo build --release --verbose
+    - name: Log in to Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
