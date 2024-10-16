@@ -9,6 +9,6 @@ USER bot
 
 WORKDIR /app
 
-COPY --chmod=700 ./target/release/discord_bot_ai .
+COPY --chown=bot:bot --chmod=700 ./target/release/discord_bot_ai .
 
 ENTRYPOINT [ "/app/discord_bot_ai" ]
