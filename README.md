@@ -16,3 +16,11 @@ cargo build --release
 ```
 
 Create an `.env` from the `.env.example` and edit it to suit your setup.
+
+## Using Docker
+
+You need to configure an environment file to connect a Database.
+
+```sh
+docker run --env-file .env ghcr.io/michellao/discord-llm-ai:main
+```
