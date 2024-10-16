@@ -3,7 +3,7 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get upgrade -y && \
 apt-get install -y libpq-dev && \
 useradd -md /app bot && \
-apt-get clean
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER bot
 
