@@ -1,0 +1,9 @@
+build-job:
+  stage: build
+  image: rust:1.82
+  script:
+    - apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/*
+    - cargo build --release --verbose
+  artifacts:
+    paths:
+      - target/release/discord_bot_ai
