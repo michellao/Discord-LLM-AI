@@ -13,7 +13,8 @@ build-job:
       - .cargo/registry/cache/
       - target/
   script:
-    - cargo build --release --verbose
+    - cargo fetch
+    - cargo build --frozen --release --verbose
   artifacts:
     paths:
       - target/release/discord_bot_ai
