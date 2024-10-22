@@ -16,6 +16,12 @@ diesel::table! {
 }
 
 diesel::table! {
+    subscribe_channel (discord_channel_id) {
+        discord_channel_id -> Int8,
+    }
+}
+
+diesel::table! {
     user_conversation (user_id, conversation_id) {
         user_id -> Int8,
         conversation_id -> Int8,
@@ -38,6 +44,7 @@ diesel::joinable!(user_conversation -> user_llm (user_id));
 diesel::allow_tables_to_appear_in_same_query!(
     conversation,
     message,
+    subscribe_channel,
     user_conversation,
     user_llm,
 );
