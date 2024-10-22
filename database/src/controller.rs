@@ -3,6 +3,7 @@ pub mod message_controller;
 pub mod user_controller;
 pub mod conversation_controller;
 pub mod user_conversation_controller;
+pub mod subscribe_channel_controller;
 
 pub trait Controller<'a> {
     type ModelController;

@@ -41,3 +41,11 @@ pub struct Message {
     pub content: String,
     pub conversation_id: i64
 }
+
+#[derive(Debug, Queryable, Identifiable, Insertable, Selectable, PartialEq)]
+#[diesel(table_name = crate::schema::subscribe_channel)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+#[diesel(primary_key(discord_channel_id))]
+pub struct SubscribeChannel {
+    pub discord_channel_id: i64
+}
