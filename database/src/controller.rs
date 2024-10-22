@@ -11,4 +11,5 @@ pub trait Controller<'a> {
     fn new(database: &'a Database) -> Self;
     fn get(&self, id: i64) -> Option<Self::ModelController>;
     fn insert(&self, model: &Self::InsertionModel) -> Self::ModelController;
+    fn delete(&self, model: &Self::ModelController) -> bool;
 }

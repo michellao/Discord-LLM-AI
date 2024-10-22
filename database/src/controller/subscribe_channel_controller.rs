@@ -39,4 +39,13 @@ impl<'a> Controller<'a> for SubscribeChannelController<'a> {
             .expect("Error saving subscribe channel");
         result
     }
+
+    fn delete(&self, model: &Self::ModelController) -> bool {
+        use crate::schema::subscribe_channel::dsl::*;
+        let connection = &mut self.database.get_connection();
+        let r = diesel::delete(subscribe_channel.find(model.id()))
+            .execute(connection)
+            .expect("Error deleting subscribe channel");
+        r > 0
+    }
 }

@@ -73,4 +73,13 @@ impl<'a> Controller<'a> for MessageController<'a> {
             .expect("Error saving new user");
         result
     }
+
+    fn delete(&self, model: &Self::ModelController) -> bool {
+        use crate::schema::message::dsl::*;
+        let connection = &mut self.database.get_connection();
+        let r = diesel::delete(message.find(model.id()))
+            .execute(connection)
+            .expect("Error deleting message");
+        r > 0
+    }
 }

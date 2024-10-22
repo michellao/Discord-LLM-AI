@@ -54,4 +54,13 @@ impl<'a> Controller<'a> for UserController<'a> {
             .expect("Error saving new user");
         result
     }
+
+    fn delete(&self, model: &Self::ModelController) -> bool {
+        use crate::schema::user_llm::dsl::*;
+        let connection = &mut self.database.get_connection();
+        let r = diesel::delete(user_llm.find(model.id()))
+            .execute(connection)
+            .expect("Error deleting user");
+        r > 0
+    }
 }
