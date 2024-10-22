@@ -34,7 +34,7 @@ jobs:
       run: |
         "$env:PGBIN" | Out-File -FilePath $env:GITHUB_PATH -Append
     - name: Fetch dependencies
-      run: cargo fetch
+      run: "cargo fetch --target $(cargo -vV | sed -n 's/host: //p')"
     - name: Build
       run: cargo build --frozen --release --verbose
     - name: Upload artifact

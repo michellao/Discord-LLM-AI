@@ -13,7 +13,7 @@ build-job:
       - .cargo/registry/cache/
       - target/
   script:
-    - cargo fetch
+    - "cargo fetch --target $(cargo -vV | sed -n 's/host: //p')"
     - cargo build --frozen --release --verbose
   artifacts:
     paths:
