@@ -26,7 +26,7 @@ impl<'a> Controller<'a> for UserController<'a> {
     type InsertionModel = NewUser;
 
     fn new(database: &'a Database) -> Self {
-        UserController {
+        Self {
             database
         }
     }

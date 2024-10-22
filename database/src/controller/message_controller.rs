@@ -45,7 +45,7 @@ impl<'a> Controller<'a> for MessageController<'a> {
     type InsertionModel = NewMessage<'a>;
 
     fn new(database: &'a Database) -> Self {
-        MessageController {
+        Self {
             database
         }
     }
