@@ -2,6 +2,7 @@ use database::{controller::Controller, insert_model::NewMessage};
 use database::controller::{message_controller::MessageController, user_controller::UserController, user_conversation_controller::UserConversationController};
 use crate::{Context, Error};
 use crate::utility::{get_from_database_or_create_bot_user, get_from_database_or_create_user, retrieve_conversation};
+use poise::serenity_prelude as serenity;
 
 /// Response by an AI
 #[poise::command(slash_command)]
@@ -88,5 +89,17 @@ pub async fn clear_conversation(
         ctx.say("Delete on database").await?;
     }
     ctx.say("Clear all previous messages").await?;
+    Ok(())
+}
+
+#[poise::command(context_menu_command = "Subscribe to thread")]
+pub async fn subscribe_conversation(
+    ctx: Context<'_>,
+    msg: serenity::Message
+) -> Result<(), Error> {
+    match msg.thread {
+        None => ctx.say("No thread detected").await?,
+        Some(_thread) => ctx.say("Detected thread and subscribe to it").await?
+    };
     Ok(())
 }
