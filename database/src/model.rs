@@ -47,5 +47,6 @@ pub struct Message {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(primary_key(discord_channel_id))]
 pub struct SubscribeChannel {
-    pub discord_channel_id: i64
+    pub discord_channel_id: i64,
+    pub expire_in: chrono::NaiveDateTime
 }

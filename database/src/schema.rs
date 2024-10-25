@@ -18,6 +18,7 @@ diesel::table! {
 diesel::table! {
     subscribe_channel (discord_channel_id) {
         discord_channel_id -> Int8,
+        expire_in -> Timestamp,
     }
 }
 
