@@ -17,6 +17,16 @@ cargo build --release
 
 Create an `.env` from the `.env.example` and edit it to suit your setup.
 
+### Database migration
+
+After completion the .env then install diesel CLI to do database migration
+
+```sh
+cd database
+cargo install diesel
+diesel migration run
+```
+
 ## Using Docker
 
 You need to configure an environment file to connect a Database.
