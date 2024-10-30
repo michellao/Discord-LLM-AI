@@ -1,3 +1,5 @@
+use std::thread::sleep;
+use std::time::Duration;
 use database::{controller::Controller, insert_model::NewMessage};
 use database::controller::{message_controller::MessageController, user_controller::UserController, user_conversation_controller::UserConversationController, subscribe_channel_controller::SubscribeChannelController};
 use crate::{Context, Error};
@@ -98,19 +100,20 @@ pub async fn subscribe_conversation(
     msg: serenity::Message
 ) -> Result<(), Error> {
     use database::model::SubscribeChannel;
-    match msg.thread {
-        None => ctx.say("No thread detected").await?,
-        Some(thread) => {
-            let timestamp_expire = thread.thread_metadata.unwrap_or_else(|| panic!("This channel isn't a thread")).archive_timestamp.unwrap_or_default();
-            let database = &ctx.data().database;
-            let subscribe_controller = SubscribeChannelController::new(database);
-            let thread_id: i64 = thread.id.get().try_into().unwrap();
-            let subscribe_channel = SubscribeChannel {
-                discord_channel_id:thread_id, expire_in: timestamp_expire.naive_local()
-            };
-            subscribe_controller.insert(&subscribe_channel);
-            ctx.say("Detected thread and subscribe to it").await?
-        }
-    };
+    if let Some(thread) = msg.thread {
+        let timestamp_expire = thread.thread_metadata.unwrap_or_else(|| panic!("This channel isn't a thread")).archive_timestamp.unwrap_or_default();
+        let database = &ctx.data().database;
+        let subscribe_controller = SubscribeChannelController::new(database);
+        let thread_id: i64 = thread.id.get().try_into().unwrap();
+        let subscribe_channel = SubscribeChannel {
+            discord_channel_id:thread_id, expire_in: timestamp_expire.naive_local()
+        };
+        subscribe_controller.insert(&subscribe_channel);
+        let reply_handle = ctx.say("Detected thread and subscribe to it").await?;
+        sleep(Duration::from_secs(12));
+        reply_handle.delete(ctx).await?
+    } else {
+        ctx.say("No thread detected").await?;
+    }
     Ok(())
 }
