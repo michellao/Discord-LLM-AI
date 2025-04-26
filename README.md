@@ -1,4 +1,4 @@
-# Local Bot with local running model AI
+# Local chatbot on Discord
 
 ## Setup
 
